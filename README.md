@@ -77,8 +77,8 @@ build.bat                   # يبني البرنامج + الـ installer (مح
 ```
 
 ### نشر إصدار جديد (والبرنامج عند الناس يحدّث نفسه)
-1. غيّر `VERSION` في `app/main.py` و `AppVer` في `installer/setup.iss`.
-2. `git tag v1.1.0 && git push --tags`
+1. غيّر `VERSION` في `app/main.py` (مثلاً `1.1.0`).
+2. اعمل push على `main`.
 3. GitHub Actions هيبني الـ Setup والنسخة Portable وينزّلهم في Releases، وكل اللي مسطّب البرنامج هيظهرله «تحديث جديد».
 
 ```
