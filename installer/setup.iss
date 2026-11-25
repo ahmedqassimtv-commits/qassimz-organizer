@@ -33,7 +33,9 @@ SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
+#if FileExists(AddBackslash(SourcePath) + "Arabic.isl")
 Name: "arabic"; MessagesFile: "Arabic.isl"
+#endif
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]

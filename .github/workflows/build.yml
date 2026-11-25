@@ -47,11 +47,22 @@ jobs:
           pip install -r requirements.txt pyinstaller
       - name: Build app
         run: python -m PyInstaller --noconfirm --clean qassimz-organizer.spec
-      - name: Arabic language file for the installer
-        shell: pwsh
-        run: Invoke-WebRequest https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/Arabic.isl -OutFile installer/Arabic.isl
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
+      - name: Arabic language file for the installer
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $inno = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages"
+          $found = Get-ChildItem -Path $inno -Recurse -Filter "Arabic.isl" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($found) { Copy-Item $found.FullName installer/Arabic.isl; exit 0 }
+          foreach ($u in @(
+            "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/Arabic.isl",
+            "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Arabic.isl",
+            "https://jrsoftware.org/files/istrans/Arabic/Arabic.isl")) {
+            try { Invoke-WebRequest $u -OutFile installer/Arabic.isl -ErrorAction Stop; exit 0 } catch {}
+          }
+          Write-Host "Arabic.isl not found - installer will be English only"
       - name: Build installer
         shell: pwsh
         run: |
