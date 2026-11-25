@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QASSIMZ Organizer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- liquid background -->
+<div class="bg">
+  <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><span class="blob b4"></span>
+  <div class="grain"></div>
+</div>
+
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side glass">
+    <div class="brand">
+      <img src="../../assets/logo.png" alt="" class="logo" onerror="this.style.display='none'">
+      <div>
+        <b>قَاسِمز</b>
+        <small>Organizer</small>
+      </div>
+    </div>
+
+    <nav>
+      <button class="nav active" data-page="organize"><i class="ic">✦</i><span>تنظيم</span></button>
+      <button class="nav" data-page="auto"><i class="ic">⚡</i><span>تلقائي</span><em class="dot" id="autoDot"></em></button>
+      <button class="nav" data-page="history"><i class="ic">↺</i><span>السجل والتراجع</span></button>
+      <button class="nav" data-page="guide"><i class="ic">☰</i><span>التعليمات</span></button>
+      <button class="nav" data-page="about"><i class="ic">◎</i><span>عن البرنامج</span></button>
+    </nav>
+
+    <div class="side-foot">
+      <button class="update-pill hidden" id="updPill"><b>تحديث جديد</b><span id="updVer"></span></button>
+      <button class="pill-btn" id="btnGithub"><svg viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/></svg>جيت هاب</button>
+      <button class="pill-btn accent" id="btnSupport">♥ الدعم</button>
+      <span class="ver" id="ver">v1.0.0</span>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+    <!-- ORGANIZE -->
+    <section class="page active" id="page-organize">
+      <header class="top">
+        <div>
+          <h1>رتّب ملفاتك في ثانية</h1>
+          <p class="muted">صور، فيديوهات، برامج، مستندات… كل حاجة في مكانها وباسم مفهوم.</p>
+        </div>
+      </header>
+
+      <div class="card glass folder-card">
+        <div class="folder-row">
+          <div class="folder-ico">📁</div>
+          <div class="folder-path">
+            <small class="muted">المجلد اللي هيترتب</small>
+            <div id="folderPath" class="path">اختار مجلد…</div>
+          </div>
+          <button class="btn ghost" id="btnDownloads">التنزيلات</button>
+          <button class="btn ghost" id="btnDesktop">سطح المكتب</button>
+          <button class="btn" id="btnPick">اختيار مجلد</button>
+        </div>
+
+        <div class="opts">
+          <label class="tog"><input type="checkbox" id="o_rename" checked><span class="sw"></span><div><b>تسمية ذكية</b><small>الاسم يقول الصورة/الفيديو إيه وتاريخه</small></div></label>
+          <label class="tog"><input type="checkbox" id="o_subkinds" checked><span class="sw"></span><div><b>تقسيم أدق</b><small>لقطات شاشة، واتساب، شورتس…</small></div></label>
+          <label class="tog"><input type="checkbox" id="o_duplicates" checked><span class="sw"></span><div><b>كشف المكرر</b><small>النسخ المتطابقة تروح مجلد «مكرر»</small></div></label>
+          <label class="tog"><input type="checkbox" id="o_by_date"><span class="sw"></span><div><b>حسب السنة والشهر</b><small>صور الكاميرا في 2026/11</small></div></label>
+          <label class="tog"><input type="checkbox" id="o_recursive"><span class="sw"></span><div><b>المجلدات الفرعية</b><small>يرتب اللي جوه المجلدات كمان</small></div></label>
+          <label class="tog"><input type="checkbox" id="o_include_color" checked><span class="sw"></span><div><b>لون الصورة في الاسم</b><small>أزرق، أحمر، داكن…</small></div></label>
+        </div>
+
+        <div class="actions">
+          <div class="seg" id="langSeg">
+            <button data-v="ar" class="on">أسماء عربي</button>
+            <button data-v="en">English</button>
+          </div>
+          <button class="btn big primary" id="btnScan"><span>افحص المجلد</span><i>→</i></button>
+        </div>
+      </div>
+
+      <!-- progress -->
+      <div class="card glass prog hidden" id="progCard">
+        <div class="prog-top"><b id="progTitle">بيفحص…</b><span id="progNum" class="muted"></span></div>
+        <div class="bar"><span id="progBar"></span></div>
+        <small id="progName" class="muted ell"></small>
+      </div>
+
+      <!-- result -->
+      <div class="card glass hidden" id="resultCard">
+        <div class="res-head">
+          <div>
+            <h2 id="resTitle">المعاينة</h2>
+            <small class="muted" id="resSub"></small>
+          </div>
+          <div class="res-act">
+            <input class="search" id="search" placeholder="ابحث في الملفات…">
+            <button class="btn ghost" id="btnCancel">إلغاء</button>
+            <button class="btn primary" id="btnApply">✓ نفّذ الترتيب</button>
+          </div>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th class="c-chk"><input type="checkbox" id="chkAll" checked></th><th>الملف الحالي</th><th class="c-kind">النوع</th><th>هيروح فين وباسم إيه</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- empty -->
+      <div class="empty" id="emptyState">
+        <div class="orb"><img src="../../assets/logo.png" alt="" onerror="this.remove()"></div>
+        <p>اختار مجلد واضغط <b>افحص</b> — هتشوف كل حاجة قبل ما يتنقل أي ملف.</p>
+      </div>
+    </section>
+
+    <!-- AUTO -->
+    <section class="page" id="page-auto">
+      <header class="top"><div><h1>البرنامج يشتغل لوحده</h1><p class="muted">شغّله مرة واحدة وانسى — هيرتب المجلدات اللي تختارها أول بأول وهو جنب الساعة.</p></div></header>
+
+      <div class="card glass auto-hero">
+        <label class="tog big"><input type="checkbox" id="a_auto"><span class="sw"></span><div><b>الترتيب التلقائي</b><small id="autoStatus">مقفول</small></div></label>
+        <button class="btn" id="btnNow">⚡ رتّب دلوقتي</button>
+      </div>
+
+      <div class="grid2">
+        <div class="card glass">
+          <h3>المجلدات اللي بتترتب لوحدها</h3>
+          <ul class="flist" id="autoFolders"></ul>
+          <button class="btn ghost" id="btnAddFolder">＋ إضافة مجلد</button>
+        </div>
+        <div class="card glass">
+          <h3>الإعدادات</h3>
+          <div class="row"><span>كل قد إيه يرتب؟</span>
+            <div class="seg" id="intSeg"><button data-v="5">5 د</button><button data-v="10">10 د</button><button data-v="30">30 د</button><button data-v="60">ساعة</button></div>
+          </div>
+          <label class="tog"><input type="checkbox" id="a_startup"><span class="sw"></span><div><b>يشتغل مع الويندوز</b><small>يفتح في الخلفية أول ما الجهاز يشتغل</small></div></label>
+          <label class="tog"><input type="checkbox" id="a_update"><span class="sw"></span><div><b>تحديث تلقائي</b><small>يشوف لو فيه إصدار جديد على GitHub</small></div></label>
+          <p class="muted small">بيستخدم نفس اختيارات صفحة «تنظيم» (التسمية الذكية، المكرر، اللغة…). لما تقفل النافذة البرنامج بيفضل شغال جنب الساعة.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="page" id="page-history">
+      <header class="top"><div><h1>السجل والتراجع</h1><p class="muted">كل عملية ترتيب بتتسجل، وتقدر ترجّع آخر واحدة زي ما كانت.</p></div></header>
+      <div class="card glass">
+        <div class="folder-row">
+          <div class="folder-ico">🕘</div>
+          <div class="folder-path"><small class="muted">المجلد</small><div class="path" id="histPath">—</div></div>
+          <button class="btn ghost" id="btnHistPick">مجلد تاني</button>
+          <button class="btn danger" id="btnUndo">↺ تراجع عن آخر ترتيب</button>
+        </div>
+        <ul class="hist" id="histList"></ul>
+      </div>
+    </section>
+
+    <!-- GUIDE -->
+    <section class="page" id="page-guide">
+      <header class="top"><div><h1>التعليمات</h1><p class="muted">٤ خطوات وخلاص.</p></div></header>
+      <div class="steps">
+        <div class="card glass step"><span class="n">1</span><h3>اختار المجلد</h3><p>التنزيلات أو سطح المكتب أو أي مجلد. البرنامج مش بيلمس حاجة برّه المجلد ده.</p></div>
+        <div class="card glass step"><span class="n">2</span><h3>ظبط الاختيارات</h3><p>تسمية ذكية، كشف المكرر، تقسيم حسب السنة… وتختار الأسماء عربي ولا إنجليزي.</p></div>
+        <div class="card glass step"><span class="n">3</span><h3>افحص وشوف المعاينة</h3><p>هتشوف كل ملف هيروح فين وباسمه الجديد. شيل علامة ✓ من أي ملف مش عايزه يتحرك.</p></div>
+        <div class="card glass step"><span class="n">4</span><h3>نفّذ… وتقدر ترجع</h3><p>اضغط «نفّذ الترتيب». لو مش عاجبك، من «السجل والتراجع» ترجّع كل حاجة مكانها.</p></div>
+      </div>
+      <div class="card glass">
+        <h3>البرنامج بيعرف الصورة إيه إزاي؟</h3>
+        <div class="kinds">
+          <div><b>📸 كاميرا</b><small>بيانات الموبايل/الكاميرا جوه الصورة (EXIF)</small></div>
+          <div><b>🖥️ لقطة شاشة</b><small>الاسم أو مقاس شاشة معروف</small></div>
+          <div><b>💬 واتساب</b><small>صيغة أسماء واتساب IMG-…-WA</small></div>
+          <div><b>🎨 جرافيك</b><small>PNG شفاف أو لوجو/ملصق صغير</small></div>
+          <div><b>🌄 خلفيات</b><small>مقاسات 2K / 4K / Ultrawide</small></div>
+          <div><b>📱 شورتس وريلز</b><small>فيديو طولي</small></div>
+          <div><b>🎬 تسجيل شاشة</b><small>OBS، Bandicam، Screen Recording</small></div>
+          <div><b>🎙️ رسالة صوتية</b><small>PTT / Opus / تسجيلات</small></div>
+        </div>
+        <p class="muted">الملفات اللي لسه بتتحمّل (crdownload / part) والملفات اللي اتعدلت من أقل من دقيقتين مش بتتحرك.</p>
+        <button class="btn ghost" id="btnReadme">افتح ملف README كامل</button>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="page" id="page-about">
+      <div class="about card glass">
+        <div class="orb big"><img src="../../assets/logo.png" alt="" onerror="this.remove()"></div>
+        <h1>QASSIMZ Organizer</h1>
+        <p class="muted">من <b>أحمد قاسم</b> — قَاسِمز</p>
+        <span class="tag" id="aboutVer">الإصدار 1.0.0</span>
+        <p>برنامج مجاني مفتوح المصدر. كل الشغل بيحصل على جهازك، مفيش أي ملف بيترفع لأي مكان.</p>
+        <div class="upd-box hidden" id="updBox"><b>🎉 إصدار جديد <span id="updVer2"></span></b><p class="muted" id="updNotes"></p><div class="bar"><span id="updBar"></span></div><button class="btn primary" id="btnUpdate">حدّث دلوقتي</button></div>
+        <button class="btn ghost" id="btnCheckUpd">ابحث عن تحديث</button>
+        <div class="about-btns">
+          <button class="btn" id="btnGithub2">⭐ المشروع على جيت هاب</button>
+          <button class="btn primary" id="btnSupport2">♥ الدعم والإبلاغ عن مشكلة</button>
+          <button class="btn ghost" id="btnSite">qassimz.com</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- onboarding -->
+<div class="modal hidden" id="welcome">
+  <div class="card glass modal-box">
+    <div class="orb"><img src="../../assets/logo.png" alt="" onerror="this.remove()"></div>
+    <h2>أهلاً بيك في QASSIMZ Organizer</h2>
+    <p class="muted">اختار مجلد ← افحص ← شوف المعاينة ← نفّذ. وأي حاجة تقدر ترجعها.</p>
+    <button class="btn primary big" id="btnWelcome"><span>يلا نبدأ</span><i>→</i></button>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"><span id="toastMsg"></span><div id="toastAct"></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
