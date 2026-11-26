@@ -1,7 +1,7 @@
 ﻿; QASSIMZ Organizer — Inno Setup script
 #define AppName "QASSIMZ Organizer"
 #ifndef AppVer
-  #define AppVer "1.2.0"
+  #define AppVer "1.3.0"
 #endif
 #define AppExe "QASSIMZ Organizer.exe"
 
@@ -24,6 +24,7 @@ OutputBaseFilename=QASSIMZ-Organizer-Setup-{#AppVer}
 SetupIconFile=..\assets\logo.ico
 UninstallDisplayIcon={app}\{#AppExe}
 WizardStyle=modern
+WizardImageStretch=yes
 WizardImageFile=wizard.bmp
 WizardSmallImageFile=wizard-small.bmp
 InfoBeforeFile=..\docs\INSTRUCTIONS-AR.txt
@@ -43,6 +44,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
+Source: "anim\*.bmp"; DestDir: "{tmp}\anim"; Flags: dontcopy
 Source: "..\dist\QASSIMZ Organizer\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion isreadme
 Source: "..\docs\INSTRUCTIONS-AR.txt"; DestDir: "{app}"; Flags: ignoreversion
@@ -76,7 +78,99 @@ Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags
 Filename: "https://github.com/ahmedqassimtv-commits/qassimz-organizer"; Description: "افتح صفحة البرنامج على GitHub"; Flags: postinstall shellexec skipifsilent unchecked
 
 [Code]
+// --- QASSIMZ Dark Studio Wizard & Animated Brand Stage ---
+const
+  QZ_FRAMES = 24;
+  QZ_FRAME_MS = 60;
+
+var
+  QzAnimTimer: LongWord;
+  QzAnimFrame: Integer;
+  QzAnimDir: String;
+  QzStageImg: TBitmapImage;
+
+function QzSetTimer(hWnd: LongWord; nIDEvent, uElapse: LongWord; lpTimerFunc: LongWord): LongWord;
+  external 'SetTimer@user32.dll stdcall';
+function QzKillTimer(hWnd: LongWord; uIDEvent: LongWord): BOOL;
+  external 'KillTimer@user32.dll stdcall';
+
+function QzPad2(N: Integer): String;
+begin
+  if N < 10 then Result := '0' + IntToStr(N) else Result := IntToStr(N);
+end;
+
+procedure QzAnimTick(Wnd: LongWord; Msg: LongWord; IdEvent: LongWord; Time: LongWord);
+var
+  S: String;
+begin
+  QzAnimFrame := (QzAnimFrame + 1) mod QZ_FRAMES;
+  S := QzPad2(QzAnimFrame);
+  try
+    if WizardForm.WizardBitmapImage.Visible then
+      WizardForm.WizardBitmapImage.Bitmap.LoadFromFile(QzAnimDir + '\big' + S + '.bmp');
+    if WizardForm.WizardBitmapImage2.Visible then
+      WizardForm.WizardBitmapImage2.Bitmap.LoadFromFile(QzAnimDir + '\big' + S + '.bmp');
+    if WizardForm.WizardSmallBitmapImage.Visible then
+      WizardForm.WizardSmallBitmapImage.Bitmap.LoadFromFile(QzAnimDir + '\small' + S + '.bmp');
+    if (QzStageImg <> nil) and (WizardForm.CurPageID = wpInstalling) then
+      QzStageImg.Bitmap.LoadFromFile(QzAnimDir + '\stage' + S + '.bmp');
+  except
+  end;
+end;
+
+procedure QzApplyDarkStudioWizard;
+begin
+  try
+    WizardForm.Color := $170F0B;
+    WizardForm.WelcomePage.Color := $170F0B;
+    WizardForm.InnerPage.Color := $1C120D;
+    WizardForm.MainPanel.Color := $140C08;
+    WizardForm.FinishedPage.Color := $170F0B;
+    WizardForm.PageNameLabel.Font.Color := $FFFFFF;
+    WizardForm.PageDescriptionLabel.Font.Color := $E1D5CB;
+    WizardForm.WelcomeLabel1.Font.Color := $FFFFFF;
+    WizardForm.WelcomeLabel2.Font.Color := $E1D5CB;
+    WizardForm.FinishedHeadingLabel.Font.Color := $FFFFFF;
+    WizardForm.FinishedLabel.Font.Color := $E1D5CB;
+    WizardForm.StatusLabel.Font.Color := $FFFFFF;
+    WizardForm.FilenameLabel.Font.Color := $E1D5CB;
+  except
+  end;
+  try
+    ExtractTemporaryFiles('{tmp}\anim\*.bmp');
+    QzAnimDir := ExpandConstant('{tmp}\anim');
+    QzAnimFrame := 0;
+    QzStageImg := TBitmapImage.Create(WizardForm);
+    QzStageImg.Parent := WizardForm.InstallingPage;
+    QzStageImg.Left := WizardForm.ProgressGauge.Left;
+    QzStageImg.Top := WizardForm.ProgressGauge.Top + WizardForm.ProgressGauge.Height + ScaleY(14);
+    QzStageImg.Width := WizardForm.ProgressGauge.Width;
+    QzStageImg.Height := ScaleY(118);
+    QzStageImg.Stretch := True;
+    QzStageImg.Bitmap.LoadFromFile(QzAnimDir + '\stage00.bmp');
+    QzAnimTimer := QzSetTimer(0, 0, QZ_FRAME_MS, CreateCallback(@QzAnimTick));
+  except
+    QzAnimTimer := 0;
+  end;
+end;
+
+procedure QzStopAnim;
+begin
+  if QzAnimTimer <> 0 then QzKillTimer(0, QzAnimTimer);
+end;
+// --- END QASSIMZ Dark Studio Wizard ---
+
 function ShouldSilentRun: Boolean;
 begin
   Result := WizardSilent and (ExpandConstant('{param:AUTORUN|1}') = '1');
+end;
+
+procedure InitializeWizard;
+begin
+  QzApplyDarkStudioWizard;
+end;
+
+procedure DeinitializeSetup;
+begin
+  QzStopAnim;
 end;

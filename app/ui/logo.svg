@@ -1,87 +1,79 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
-    <!-- Deep obsidian dark interior -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#141821"/>
-      <stop offset="52%" stop-color="#0B0E14"/>
-      <stop offset="100%" stop-color="#07090D"/>
+    <linearGradient id="ccCore" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0C3E33"/>
+      <stop offset="55%" stop-color="#0A2E27"/>
+      <stop offset="100%" stop-color="#0A2721"/>
     </linearGradient>
 
-    <!-- Signature ambient corner glow -->
-    <radialGradient id="ambientBR" cx="82%" cy="86%" r="72%">
-      <stop offset="0%" stop-color="#10B981" stop-opacity="0.26"/>
-      <stop offset="55%" stop-color="#059669" stop-opacity="0.08"/>
+    <radialGradient id="ccWash" cx="80%" cy="88%" r="68%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.16"/>
       <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
     </radialGradient>
 
-    <radialGradient id="ambientTL" cx="18%" cy="12%" r="58%">
-      <stop offset="0%" stop-color="#A7F3D0" stop-opacity="0.13"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-    </radialGradient>
-
-    <!-- Glowing border gradient -->
-    <linearGradient id="rimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#A7F3D0"/>
-      <stop offset="45%" stop-color="#10B981"/>
-      <stop offset="100%" stop-color="#059669"/>
+    <linearGradient id="rimInk" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3AC997"/>
+      <stop offset="100%" stop-color="#0EB17C"/>
     </linearGradient>
 
-    <!-- Luminous 2-letter monogram fill -->
-    <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#A7F3D0"/>
-      <stop offset="42%" stop-color="#10B981"/>
+    <linearGradient id="monoInk" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4FD1A2"/>
+      <stop offset="48%" stop-color="#10B981"/>
       <stop offset="100%" stop-color="#10B981"/>
     </linearGradient>
 
-    <!-- Outer & inner rim neon glow -->
-    <filter id="rimGlow" x="-12%" y="-12%" width="124%" height="124%">
-      <feGaussianBlur stdDeviation="15" result="blur"/>
-    </filter>
-
-    <filter id="textShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.65"/>
-    </filter>
-
-    <clipPath id="tileClip">
-      <rect x="40" y="40" width="944" height="944" rx="212"/>
+    <clipPath id="squircleClip">
+      <rect x="14" y="14" width="996" height="996" rx="222"/>
     </clipPath>
   </defs>
 
-  <!-- Soft outer neon halo -->
-  <rect x="40" y="40" width="944" height="944" rx="212"
-        fill="none" stroke="#10B981" stroke-width="34" stroke-opacity="0.42" filter="url(#rimGlow)"/>
-
-  <!-- Clipped dark tile interior -->
-  <g clip-path="url(#tileClip)">
-    <rect x="40" y="40" width="944" height="944" fill="url(#bgGrad)"/>
-    <rect x="40" y="40" width="944" height="944" fill="url(#ambientBR)"/>
-    <rect x="40" y="40" width="944" height="944" fill="url(#ambientTL)"/>
-    <!-- Subtle inner glass sheen -->
-    <rect x="64" y="64" width="896" height="896" rx="190"
-          fill="none" stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="4"/>
+  <!-- Clipped Adobe CC x ArtCraft interior -->
+  <g clip-path="url(#squircleClip)">
+    <rect x="14" y="14" width="996" height="996" fill="url(#ccCore)"/>
+    <rect x="14" y="14" width="996" height="996" fill="url(#ccWash)"/>
+    <g>
+      <line x1="208" y1="24" x2="208" y2="1000" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="24" y1="208" x2="1000" y2="208" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="360" y1="24" x2="360" y2="1000" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="24" y1="360" x2="1000" y2="360" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="512" y1="24" x2="512" y2="1000" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="24" y1="512" x2="1000" y2="512" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="664" y1="24" x2="664" y2="1000" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="24" y1="664" x2="1000" y2="664" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="816" y1="24" x2="816" y2="1000" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+      <line x1="24" y1="816" x2="1000" y2="816" stroke="#A7F3D0" stroke-opacity="0.045" stroke-width="2"/>
+    </g>
+    <!-- Crisp flat Adobe CC colored frame inside the squircle -->
+    <rect x="28" y="28" width="968" height="968" rx="208"
+          fill="none" stroke="url(#rimInk)" stroke-width="28"/>
+    <!-- Fine drafted architectural inner hairline -->
+    <rect x="44" y="44" width="936" height="936" rx="192"
+          fill="none" stroke="#FFFFFF" stroke-opacity="0.10" stroke-width="3"/>
   </g>
 
-  <!-- Crisp glowing colored border -->
-  <rect x="40" y="40" width="944" height="944" rx="212"
-        fill="none" stroke="url(#rimGrad)" stroke-width="26"/>
-  <rect x="40" y="40" width="944" height="944" rx="212"
-        fill="none" stroke="#A7F3D0" stroke-opacity="0.55" stroke-width="5"/>
+  <!-- Crisp ArtCraft drafted ink outer boundary (ensures razor-sharp contrast on #F2F1EE paper) -->
+  <rect x="14" y="14" width="996" height="996" rx="222"
+        fill="none" stroke="#101014" stroke-opacity="0.88" stroke-width="8"/>
 
-  <!-- Mini functional symbol badge (top-right) -->
-  <g transform="translate(792, 218)">
-    <rect x="-102" y="-102" width="204" height="204" rx="56"
-          fill="#0C1018" fill-opacity="0.92" stroke="#10B981" stroke-opacity="0.52" stroke-width="6.5"/>
-    <g transform="scale(1.30)">
-      
-        <path d="M-48 -26 C-48 -35 -41 -42 -32 -42 H-10 L4 -26 H34 C43 -26 50 -19 50 -10 V30 C50 39 43 46 34 46 H-32 C-41 46 -48 39 -48 30 Z" fill="none" stroke="#A7F3D0" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Harmonized architectural mini functional symbol cell (top-right) -->
+  <g transform="translate(796, 216)">
+    <rect x="-100" y="-100" width="200" height="200" rx="44"
+          fill="#0A342C" stroke="#10B981" stroke-opacity="0.62" stroke-width="6"/>
+    <rect x="-92" y="-92" width="184" height="184" rx="37"
+          fill="none" stroke="#FFFFFF" stroke-opacity="0.07" stroke-width="2.5"/>
+    <g transform="scale(1.28)">
+      <path d="M-48 -26 C-48 -35 -41 -42 -32 -42 H-10 L4 -26 H34 C43 -26 50 -19 50 -10 V30 C50 39 43 46 34 46 H-32 C-41 46 -48 39 -48 30 Z" fill="none" stroke="#A7F3D0" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M-18 12 L-4 26 L22 -2" fill="none" stroke="#10B981" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-        
     </g>
   </g>
 
-  <!-- Prominent 2-letter Adobe-style monogram -->
-  <g fill="url(#textGrad)" filter="url(#textShadow)">
-      <path d="M721 -26Q428 -26 235.5 170.0Q43 366 43 677V757Q43 1068 236.0 1263.0Q429 1458 721 1458Q1013 1458 1206.5 1261.0Q1400 1064 1400 757V677Q1400 370 1206.5 172.0Q1013 -26 721 -26ZM721 328Q856 328 944.0 419.0Q1032 510 1032 653V780Q1032 924 944.0 1014.5Q856 1105 721 1105Q586 1105 498.5 1014.5Q411 924 411 780V653Q411 509 498.0 418.5Q585 328 721 328Z" transform="translate(102.98,792.00) scale(0.30278,-0.30278)"/>
+  <!-- Crisp shadow offset (no muddy Gaussian blur) + Bold 2-letter Adobe monogram -->
+  <g fill="#06070A" fill-opacity="0.58" transform="translate(0, 10) translate(512, 560) scale(1.03) translate(-512, -560)">
+    <path d="M721 -26Q428 -26 235.5 170.0Q43 366 43 677V757Q43 1068 236.0 1263.0Q429 1458 721 1458Q1013 1458 1206.5 1261.0Q1400 1064 1400 757V677Q1400 370 1206.5 172.0Q1013 -26 721 -26ZM721 328Q856 328 944.0 419.0Q1032 510 1032 653V780Q1032 924 944.0 1014.5Q856 1105 721 1105Q586 1105 498.5 1014.5Q411 924 411 780V653Q411 509 498.0 418.5Q585 328 721 328Z" transform="translate(102.98,792.00) scale(0.30278,-0.30278)"/>
+      <path d="M108 -3Q95 -3 86.5 5.5Q78 14 78 27V1020Q78 1032 86.0 1040.5Q94 1049 106 1049H359Q370 1049 378.5 1041.0Q387 1033 387 1022V861L358 897H389Q426 983 490.5 1027.0Q555 1071 627 1071Q648 1071 669.5 1067.5Q691 1064 721 1054Q729 1051 734.0 1044.0Q739 1037 739 1025V775Q739 762 731.5 754.5Q724 747 713 750Q677 763 651.0 768.0Q625 773 600 773Q519 773 464.0 715.0Q409 657 409 556V27Q409 14 400.5 5.5Q392 -3 380 -3Z" transform="translate(524.60,792.00) scale(0.30278,-0.30278)"/>
+  </g>
+  <g fill="url(#monoInk)" transform="translate(512, 560) scale(1.03) translate(-512, -560)">
+    <path d="M721 -26Q428 -26 235.5 170.0Q43 366 43 677V757Q43 1068 236.0 1263.0Q429 1458 721 1458Q1013 1458 1206.5 1261.0Q1400 1064 1400 757V677Q1400 370 1206.5 172.0Q1013 -26 721 -26ZM721 328Q856 328 944.0 419.0Q1032 510 1032 653V780Q1032 924 944.0 1014.5Q856 1105 721 1105Q586 1105 498.5 1014.5Q411 924 411 780V653Q411 509 498.0 418.5Q585 328 721 328Z" transform="translate(102.98,792.00) scale(0.30278,-0.30278)"/>
       <path d="M108 -3Q95 -3 86.5 5.5Q78 14 78 27V1020Q78 1032 86.0 1040.5Q94 1049 106 1049H359Q370 1049 378.5 1041.0Q387 1033 387 1022V861L358 897H389Q426 983 490.5 1027.0Q555 1071 627 1071Q648 1071 669.5 1067.5Q691 1064 721 1054Q729 1051 734.0 1044.0Q739 1037 739 1025V775Q739 762 731.5 754.5Q724 747 713 750Q677 763 651.0 768.0Q625 773 600 773Q519 773 464.0 715.0Q409 657 409 556V27Q409 14 400.5 5.5Q392 -3 380 -3Z" transform="translate(524.60,792.00) scale(0.30278,-0.30278)"/>
   </g>
 </svg>
