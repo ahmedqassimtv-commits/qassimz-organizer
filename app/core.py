@@ -166,7 +166,7 @@ def _exif(path: Path) -> dict:
                 pass
             if "w" in out:
                 out["color"] = _dominant_color(im)
-                out["has_alpha"] = im.mode in ("RGBA", "LA", "P") and "transparency" in im.info or im.mode == "RGBA"
+                out["has_alpha"] = im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info)
     except Exception:
         pass
     return out

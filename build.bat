@@ -16,7 +16,7 @@ if not exist %ISCC% (
 )
 %ISCC% installer\setup.iss || goto :err
 echo.
-echo DONE  ^>^>  dist\QASSIMZ-Organizer-Setup-1.0.0.exe
+echo DONE  ^>^>  dist\QASSIMZ-Organizer-Setup-1.1.0.exe
 pause & exit /b 0
 :err
 echo BUILD FAILED

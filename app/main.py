@@ -1,12 +1,14 @@
-"""QASSIMZ Organizer — desktop app (pywebview + HTML Liquid Glass UI).
+"""QASSIMZ Organizer — desktop app (pywebview + Architectural File Blueprint Studio UI).
 
 Runs on its own: auto-organizes watched folders in the background, lives in the
-system tray, starts with Windows, and updates itself from GitHub Releases.
+system tray, starts with Windows, and updates itself from QASSIMZ Hub / GitHub Releases.
 """
 from __future__ import annotations
 
 import json
 import os
+import socket
+import ssl
 import subprocess
 import sys
 import tempfile
@@ -17,22 +19,33 @@ import webbrowser
 from dataclasses import asdict
 from pathlib import Path
 
+# Guard windowed PyInstaller builds where stdout / stderr are None
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w", encoding="utf-8")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
 import webview  # pywebview
 
 import core
 
 APP_NAME = "QASSIMZ Organizer"
-VERSION = "1.0.0"
+APP_ID = "qassimz-organizer"
+VERSION = "1.1.0"
 REPO = "ahmedqassimtv-commits/qassimz-organizer"
+CATALOG_URL = "https://raw.githubusercontent.com/ahmedqassimtv-commits/qassimz-hub/main/catalog.json"
 GITHUB_URL = f"https://github.com/{REPO}"
 SUPPORT_URL = f"https://github.com/{REPO}/issues"
 SITE_URL = "https://qassimz.com"
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 
+DATA_DIR = Path(os.environ.get("APPDATA", Path.home())) / APP_NAME
+IPC_PORT_FILE = DATA_DIR / "instance.port"
+
 ARGS = sys.argv[1:]
 BACKGROUND = "--background" in ARGS
 # opened from the Explorer right-click menu: "رتّب بـ QASSIMZ Organizer"
-START_FOLDER = next((a for a in ARGS if os.path.isdir(a)), "")
+START_FOLDER = next((str(Path(a).resolve()) for a in ARGS if not a.startswith("-") and os.path.isdir(a)), "")
 
 DEFAULTS = {
     "lang": "ar", "rename": True, "subkinds": True, "duplicates": True, "by_date": False,
@@ -41,6 +54,9 @@ DEFAULTS = {
     "auto_update": True, "welcomed": False, "last_auto": None,
 }
 
+_MUTEX_HANDLE = None
+_LOCK_FILE = None
+
 
 def resource(rel: str) -> str:
     base = getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)
@@ -48,9 +64,8 @@ def resource(rel: str) -> str:
 
 
 def settings_path() -> Path:
-    base = Path(os.environ.get("APPDATA", Path.home())) / "QASSIMZ Organizer"
-    base.mkdir(parents=True, exist_ok=True)
-    return base / "settings.json"
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    return DATA_DIR / "settings.json"
 
 
 def load_settings() -> dict:
@@ -69,11 +84,160 @@ def save_settings(s: dict):
         pass
 
 
+def _ssl_context() -> ssl.SSLContext:
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        return ssl.create_default_context()
+
+
 def _ver(t: str) -> tuple:
     try:
-        return tuple(int(x) for x in t.lstrip("vV").split(".")[:3])
+        return tuple(int(x) for x in t.strip().lstrip("vV").split(".")[:3])
     except Exception:
         return (0,)
+
+
+# ------------------------------------------------------- Single-instance & IPC
+def _acquire_single_instance() -> bool:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if os.name == "nt":
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            kernel32.CreateMutexW.argtypes = [ctypes.c_void_p, ctypes.c_bool, ctypes.c_wchar_p]
+            kernel32.CreateMutexW.restype = ctypes.c_void_p
+            handle = kernel32.CreateMutexW(None, False, "Local\\QASSIMZ_Organizer_SingleInstance_v1")
+            if kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+                if handle:
+                    kernel32.CloseHandle(handle)
+                return False
+            global _MUTEX_HANDLE
+            _MUTEX_HANDLE = handle
+            return True
+        except Exception:
+            return True
+    else:
+        try:
+            import fcntl
+            lf = open(DATA_DIR / "instance.lock", "w", encoding="utf-8")
+            try:
+                fcntl.flock(lf.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError:
+                lf.close()
+                return False
+            global _LOCK_FILE
+            _LOCK_FILE = lf
+            return True
+        except Exception:
+            return True
+
+
+def _forward_to_running_instance(payload: str) -> bool:
+    for _ in range(15):
+        try:
+            port = int(IPC_PORT_FILE.read_text(encoding="utf-8").strip())
+            with socket.create_connection(("127.0.0.1", port), timeout=1.0) as conn:
+                conn.sendall(payload.encode("utf-8"))
+            return True
+        except Exception:
+            time.sleep(0.1)
+    return False
+
+
+def _start_ipc_server(api: "Api"):
+    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if os.name == "nt" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+        try:
+            srv.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        except Exception:
+            pass
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(8)
+    port = srv.getsockname()[1]
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        IPC_PORT_FILE.write_text(str(port), encoding="utf-8")
+    except Exception:
+        pass
+
+    def serve():
+        while not api._quit:
+            try:
+                conn, _ = srv.accept()
+            except Exception:
+                break
+            try:
+                with conn:
+                    conn.settimeout(2.0)
+                    msg = conn.recv(4096).decode("utf-8", errors="replace").strip()
+                if not msg or msg == "NOOP":
+                    continue
+                if msg != "SHOW" and os.path.isdir(msg):
+                    api.activate_folder(msg)
+                else:
+                    api.show()
+            except Exception:
+                pass
+
+    threading.Thread(target=serve, daemon=True).start()
+    return srv
+
+
+# ------------------------------------------------------- Window / WebView2 UX
+def _apply_dark_titlebar():
+    if os.name != "nt":
+        return
+    try:
+        import ctypes
+        hwnd = ctypes.windll.user32.FindWindowW(None, APP_NAME)
+        if hwnd:
+            dwm = ctypes.windll.dwmapi
+            dark = ctypes.c_int(1)
+            caption = ctypes.c_int(0x000C0D09)  # COLORREF 0x00BBGGRR -> #090D0C
+            text = ctypes.c_int(0x00F3F6F4)
+            dwm.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(dark), 4)
+            dwm.DwmSetWindowAttribute(hwnd, 35, ctypes.byref(caption), 4)
+            dwm.DwmSetWindowAttribute(hwnd, 36, ctypes.byref(text), 4)
+    except Exception:
+        pass
+
+
+def _focus_window(win, bring_to_front: bool = False):
+    if not win:
+        return
+    if bring_to_front:
+        try:
+            win.on_top = True
+            win.on_top = False
+        except Exception:
+            pass
+    if os.name == "nt":
+        try:
+            import ctypes
+            user32 = ctypes.windll.user32
+            hwnd = user32.FindWindowW(None, APP_NAME)
+            if hwnd:
+                if user32.IsIconic(hwnd):
+                    user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+                if bring_to_front:
+                    user32.SetForegroundWindow(hwnd)
+                user32.SetFocus(hwnd)
+        except Exception:
+            pass
+        try:
+            from System import Action  # type: ignore
+            from webview.platforms import winforms  # type: ignore
+            form = winforms.BrowserView.instances.get(win.uid)
+            if form is not None:
+                form.Invoke(Action(lambda: (form.Activate() if bring_to_front else None, form.webview.Focus())))
+        except Exception:
+            pass
+    try:
+        win.evaluate_js("window.focus && window.focus();")
+    except Exception:
+        pass
 
 
 # ------------------------------------------------------------ Windows startup
@@ -95,7 +259,14 @@ def set_startup(on: bool):
     import winreg
     with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN_KEY, 0, winreg.KEY_SET_VALUE) as k:
         if on:
-            winreg.SetValueEx(k, APP_NAME, 0, winreg.REG_SZ, f'"{sys.executable}" --background')
+            if getattr(sys, "frozen", False):
+                cmd = f'"{sys.executable}" --background'
+            else:
+                script = Path(__file__).resolve()
+                pyw = Path(sys.executable).with_name("pythonw.exe")
+                exe = pyw if pyw.exists() else Path(sys.executable)
+                cmd = f'"{exe}" "{script}" --background'
+            winreg.SetValueEx(k, APP_NAME, 0, winreg.REG_SZ, cmd)
         else:
             try:
                 winreg.DeleteValue(k, APP_NAME)
@@ -111,6 +282,7 @@ class Api:
         self.plan = None
         self._busy = False
         self._quit = False
+        self._pending_folder = START_FOLDER
         self.settings = load_settings()
         self.update = None          # {"version", "url", "notes"}
         self._wake = threading.Event()
@@ -132,9 +304,11 @@ class Api:
                 pass
 
     def info(self):
+        sf = self._pending_folder or START_FOLDER
+        self._pending_folder = ""
         return {"name": APP_NAME, "version": VERSION, "github": GITHUB_URL, "support": SUPPORT_URL,
                 "site": SITE_URL, "downloads": str(Path.home() / "Downloads"),
-                "desktop": str(Path.home() / "Desktop"), "start_folder": START_FOLDER,
+                "desktop": str(Path.home() / "Desktop"), "start_folder": sf,
                 "startup": startup_enabled(), "update": self.update}
 
     def load_settings(self):
@@ -271,23 +445,55 @@ class Api:
             self._wake.clear()
 
     # ----------------------------------------------------------- update
+    def _set_found_update(self, version: str, url: str, notes: str, silent: bool):
+        self.update = {"version": version.lstrip("vV"), "url": url, "notes": (notes or "")[:600]}
+        self._emit("update", self.update)
+        if silent:
+            self._notify(f"فيه تحديث جديد {self.update['version']} — افتح البرنامج وحدّث بضغطة")
+        return self.update
+
     def check_update(self, silent: bool = False):
+        ctx = _ssl_context()
+        # 1. Primary: QASSIMZ Hub catalog.json (zero GitHub API rate-limit pressure)
+        try:
+            req = urllib.request.Request(CATALOG_URL, headers={"User-Agent": "QASSIMZ-Organizer"})
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+                cat = json.loads(r.read().decode("utf-8"))
+            apps = cat.get("apps") if isinstance(cat, dict) else None
+            entry = None
+            if isinstance(apps, dict):
+                entry = apps.get(APP_ID)
+            elif isinstance(apps, list):
+                entry = next((x for x in apps if isinstance(x, dict) and (
+                    x.get("id") == APP_ID or x.get("slug") == APP_ID or str(x.get("repo", "")).endswith(APP_ID)
+                )), None)
+            if isinstance(entry, dict):
+                ver = str(entry.get("version") or entry.get("latest_version") or entry.get("latest") or entry.get("tag_name") or "").strip()
+                url = (entry.get("setup_url") or entry.get("installer_url") or entry.get("download_url") or entry.get("url") or "")
+                if not url and isinstance(entry.get("assets"), dict):
+                    url = entry["assets"].get("setup") or entry["assets"].get("installer") or entry["assets"].get("url") or ""
+                notes = str(entry.get("notes") or entry.get("release_notes") or entry.get("changelog") or entry.get("body") or "")
+                if _ver(ver) != (0,):
+                    if _ver(ver) > _ver(VERSION):
+                        if isinstance(url, str) and url.startswith("https://"):
+                            return self._set_found_update(ver, url, notes, silent)
+                    else:
+                        return {"latest": True}
+        except Exception:
+            pass
+
+        # 2. Fallback: GitHub Releases API
         try:
             req = urllib.request.Request(f"https://api.github.com/repos/{REPO}/releases/latest",
                                          headers={"User-Agent": "QASSIMZ-Organizer",
                                                   "Accept": "application/vnd.github+json"})
-            with urllib.request.urlopen(req, timeout=10) as r:
+            with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
                 rel = json.loads(r.read().decode("utf-8"))
             tag = rel.get("tag_name", "")
             asset = next((a for a in rel.get("assets", [])
                           if a["name"].lower().endswith(".exe") and "setup" in a["name"].lower()), None)
             if _ver(tag) > _ver(VERSION) and asset:
-                self.update = {"version": tag.lstrip("vV"), "url": asset["browser_download_url"],
-                               "notes": (rel.get("body") or "")[:600]}
-                self._emit("update", self.update)
-                if silent:
-                    self._notify(f"فيه تحديث جديد {self.update['version']} — افتح البرنامج وحدّث بضغطة")
-                return self.update
+                return self._set_found_update(tag, asset["browser_download_url"], rel.get("body") or "", silent)
             return {"latest": True}
         except Exception as e:
             return {"error": str(e)}
@@ -298,9 +504,10 @@ class Api:
 
         def run():
             try:
+                ctx = _ssl_context()
                 dst = Path(tempfile.gettempdir()) / f"QASSIMZ-Organizer-Setup-{self.update['version']}.exe"
                 req = urllib.request.Request(self.update["url"], headers={"User-Agent": "QASSIMZ-Organizer"})
-                with urllib.request.urlopen(req, timeout=60) as r, open(dst, "wb") as f:
+                with urllib.request.urlopen(req, timeout=60, context=ctx) as r, open(dst, "wb") as f:
                     size = int(r.headers.get("Content-Length") or 0)
                     got = 0
                     while chunk := r.read(1 << 16):
@@ -318,14 +525,27 @@ class Api:
         return True
 
     # ------------------------------------------------------------ window
+    def activate_folder(self, folder: str):
+        self._pending_folder = folder
+        self.show()
+        self._emit("open_folder", folder)
+
     def show(self):
         if self.window:
-            self.window.show()
-            self.window.restore()
+            try:
+                self.window.show()
+                self.window.restore()
+            except Exception:
+                pass
+            _focus_window(self.window, bring_to_front=True)
 
     def quit(self):
         self._quit = True
         self._wake.set()
+        try:
+            IPC_PORT_FILE.unlink(missing_ok=True)
+        except Exception:
+            pass
         try:
             if self.tray:
                 self.tray.stop()
@@ -359,13 +579,33 @@ def start_tray(api: Api):
 
 
 def main():
+    if not _acquire_single_instance():
+        if BACKGROUND and not START_FOLDER:
+            sys.exit(0)
+        _forward_to_running_instance(START_FOLDER or "SHOW")
+        sys.exit(0)
+
     api = Api()
+    _start_ipc_server(api)
+
+    webview_storage = DATA_DIR / "webview"
+    webview_storage.mkdir(parents=True, exist_ok=True)
+
     win = webview.create_window(
         APP_NAME, url=resource("app/ui/index.html"), js_api=api,
-        width=1200, height=780, min_size=(980, 640), background_color="#0a0407",
+        width=1220, height=800, min_size=(980, 640), background_color="#090D0C",
         text_select=False, hidden=BACKGROUND,
     )
     api.window = win
+
+    def on_shown():
+        _apply_dark_titlebar()
+        if not BACKGROUND:
+            _focus_window(win, bring_to_front=False)
+
+    def on_loaded():
+        if not BACKGROUND:
+            _focus_window(win, bring_to_front=False)
 
     def on_closing():
         # keep working from the tray when auto-organize is on
@@ -375,6 +615,8 @@ def main():
             return False
         api.quit()
 
+    win.events.shown += on_shown
+    win.events.loaded += on_loaded
     win.events.closing += on_closing
 
     def boot():
@@ -384,8 +626,14 @@ def main():
             threading.Thread(target=lambda: (time.sleep(5), api.check_update(silent=BACKGROUND)),
                              daemon=True).start()
 
-    webview.start(boot, gui="edgechromium" if os.name == "nt" else None, debug=False,
-                  icon=resource("assets/logo.png"))
+    webview.start(
+        boot,
+        gui="edgechromium" if os.name == "nt" else None,
+        debug=False,
+        icon=str(resource("assets/logo.ico")),
+        private_mode=False,
+        storage_path=str(webview_storage),
+    )
 
 
 if __name__ == "__main__":

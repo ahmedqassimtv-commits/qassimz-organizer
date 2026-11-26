@@ -1,7 +1,7 @@
 ﻿; QASSIMZ Organizer — Inno Setup script
 #define AppName "QASSIMZ Organizer"
 #ifndef AppVer
-  #define AppVer "1.0.0"
+  #define AppVer "1.1.0"
 #endif
 #define AppExe "QASSIMZ Organizer.exe"
 
@@ -30,6 +30,7 @@ InfoBeforeFile=..\docs\INSTRUCTIONS-AR.txt
 LicenseFile=..\LICENSE
 Compression=lzma2/ultra
 SolidCompression=yes
+ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
@@ -70,6 +71,12 @@ Root: HKCU; Subkey: "Software\Classes\Directory\shell\QassimzOrganizer\command";
 
 [Run]
 ; after a silent self-update, start the app again in the background
-Filename: "{app}\{#AppExe}"; Parameters: "--background"; Flags: nowait; Check: WizardSilent
+Filename: "{app}\{#AppExe}"; Parameters: "--background"; Flags: nowait; Check: ShouldSilentRun
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
 Filename: "https://github.com/ahmedqassimtv-commits/qassimz-organizer"; Description: "افتح صفحة البرنامج على GitHub"; Flags: postinstall shellexec skipifsilent unchecked
+
+[Code]
+function ShouldSilentRun: Boolean;
+begin
+  Result := WizardSilent and (ExpandConstant('{param:AUTORUN|1}') = '1');
+end;
