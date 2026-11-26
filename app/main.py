@@ -31,7 +31,7 @@ import core
 
 APP_NAME = "QASSIMZ Organizer"
 APP_ID = "qassimz-organizer"
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 REPO = "ahmedqassimtv-commits/qassimz-organizer"
 CATALOG_URL = "https://raw.githubusercontent.com/ahmedqassimtv-commits/qassimz-hub/main/catalog.json"
 GITHUB_URL = f"https://github.com/{REPO}"
@@ -281,6 +281,8 @@ class Api:
         self.tray = None
         self.plan = None
         self._busy = False
+        self._busy_lock = threading.Lock()
+        self._is_maximized = False
         self._quit = False
         self._pending_folder = START_FOLDER
         self.settings = load_settings()
@@ -288,6 +290,17 @@ class Api:
         self._wake = threading.Event()
 
     # ----------------------------------------------------------- helpers
+    def _try_acquire_busy(self) -> bool:
+        with self._busy_lock:
+            if self._busy:
+                return False
+            self._busy = True
+            return True
+
+    def _release_busy(self) -> None:
+        with self._busy_lock:
+            self._busy = False
+
     def _emit(self, event: str, data):
         if self.window:
             try:
@@ -295,6 +308,18 @@ class Api:
                     f"window.onBackend && window.onBackend({json.dumps(event)}, {json.dumps(data, ensure_ascii=False)})")
             except Exception:
                 pass
+
+    def _make_progress_cb(self, phase: str, min_interval: float = 0.12):
+        last_t = [0.0]
+
+        def cb(i: int, n: int, name: str):
+            now = time.monotonic()
+            is_final = (n > 0 and i >= n)
+            if is_final or i <= 1 or (now - last_t[0]) >= min_interval:
+                last_t[0] = now
+                self._emit("progress", {"i": i, "n": n, "name": name, "phase": phase})
+
+        return cb
 
     def _notify(self, msg: str):
         if self.tray:
@@ -355,43 +380,39 @@ class Api:
         return core.Options(**{k: v for k, v in d.items() if k in core.Options.__dataclass_fields__})
 
     def scan(self, opts: dict):
-        if self._busy:
+        if not self._try_acquire_busy():
             return False
-        self._busy = True
 
         def run():
             try:
                 o = self._opts(opts.get("folder", ""), opts)
-                plan = core.build_plan(o, progress=lambda i, n, name: self._emit(
-                    "progress", {"i": i, "n": n, "name": name, "phase": "scan"}))
+                plan = core.build_plan(o, progress=self._make_progress_cb("scan"))
                 self.plan = asdict(plan)
                 self._emit("plan", self.plan)
             except Exception as ex:
                 self._emit("error", str(ex))
             finally:
-                self._busy = False
+                self._release_busy()
 
         threading.Thread(target=run, daemon=True).start()
         return True
 
     def apply(self, excluded: list):
-        if self._busy or not self.plan:
+        if not self.plan or not self._try_acquire_busy():
             return False
-        self._busy = True
         ex = set(excluded or [])
         plan = dict(self.plan)
         plan["items"] = [it for it in self.plan["items"] if it["src"] not in ex]
 
         def run():
             try:
-                r = core.apply_plan(plan, progress=lambda i, n, name: self._emit(
-                    "progress", {"i": i, "n": n, "name": name, "phase": "apply"}))
+                r = core.apply_plan(plan, progress=self._make_progress_cb("apply"))
                 self.plan = None
                 self._emit("applied", {"moved": r["moved"], "errors": r["errors"], "folder": plan["folder"]})
             except Exception as e:
                 self._emit("error", str(e))
             finally:
-                self._busy = False
+                self._release_busy()
 
         threading.Thread(target=run, daemon=True).start()
         return True
@@ -407,7 +428,21 @@ class Api:
 
     # -------------------------------------------------------- auto mode
     def organize_now(self):
-        self._wake.set()
+        if not self._try_acquire_busy():
+            return False
+
+        def run():
+            try:
+                moved = self._auto_once()
+                self._emit("auto", {"moved": moved, "at": self.settings["last_auto"], "manual": True})
+                if moved:
+                    self._notify(f"اترتب {moved} ملف ✓")
+            except Exception as ex:
+                self._emit("error", str(ex))
+            finally:
+                self._release_busy()
+
+        threading.Thread(target=run, daemon=True).start()
         return True
 
     def _auto_once(self) -> int:
@@ -431,12 +466,11 @@ class Api:
         self._wake.wait(8)  # let Windows finish booting / downloads settle
         self._wake.clear()
         while not self._quit:
-            if self.settings.get("auto") and not self._busy:
-                self._busy = True
+            if self.settings.get("auto") and self._try_acquire_busy():
                 try:
                     moved = self._auto_once()
                 finally:
-                    self._busy = False
+                    self._release_busy()
                 self._emit("auto", {"moved": moved, "at": self.settings["last_auto"]})
                 if moved:
                     self._notify(f"اترتب {moved} ملف تلقائياً ✓")
@@ -510,11 +544,16 @@ class Api:
                 with urllib.request.urlopen(req, timeout=60, context=ctx) as r, open(dst, "wb") as f:
                     size = int(r.headers.get("Content-Length") or 0)
                     got = 0
+                    last_t = 0.0
                     while chunk := r.read(1 << 16):
                         f.write(chunk)
                         got += len(chunk)
                         if size:
-                            self._emit("update_progress", round(got * 100 / size))
+                            now = time.monotonic()
+                            pct = round(got * 100 / size)
+                            if pct >= 100 or (now - last_t) >= 0.12:
+                                last_t = now
+                                self._emit("update_progress", pct)
                 # silent install; the installer relaunches the app when done
                 subprocess.Popen([str(dst), "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CLOSEAPPLICATIONS"])
                 self.quit()
@@ -525,6 +564,41 @@ class Api:
         return True
 
     # ------------------------------------------------------------ window
+    def win_minimize(self) -> bool:
+        if self.window is not None:
+            try:
+                self.window.minimize()
+                return True
+            except Exception:
+                pass
+        return False
+
+    def win_toggle_maximize(self) -> bool:
+        if self.window is not None:
+            try:
+                if self._is_maximized:
+                    self.window.restore()
+                    self._is_maximized = False
+                else:
+                    self.window.maximize()
+                    self._is_maximized = True
+                return self._is_maximized
+            except Exception:
+                pass
+        return False
+
+    def win_close(self) -> bool:
+        # Respect tray / minimize-to-tray behavior when auto-organize is ON
+        if self.settings.get("auto") and self.tray and not self._quit and self.window is not None:
+            try:
+                self.window.hide()
+                self._notify("البرنامج شغال في الخلفية وبيرتب لوحده — هتلاقيه جنب الساعة")
+                return True
+            except Exception:
+                pass
+        self.quit()
+        return True
+
     def activate_folder(self, folder: str):
         self._pending_folder = folder
         self.show()
@@ -593,7 +667,8 @@ def main():
 
     win = webview.create_window(
         APP_NAME, url=resource("app/ui/index.html"), js_api=api,
-        width=1220, height=800, min_size=(980, 640), background_color="#090D0C",
+        width=1240, height=820, min_size=(980, 640), background_color="#070B0A",
+        frameless=True, easy_drag=False,
         text_select=False, hidden=BACKGROUND,
     )
     api.window = win

@@ -3,8 +3,8 @@ VSVersionInfo(
   kids=[StringFileInfo([StringTable('040904B0', [
     StringStruct('CompanyName', 'QASSIMZ'),
     StringStruct('FileDescription', 'QASSIMZ Organizer'),
-    StringStruct('FileVersion', '1.1.0'),
+    StringStruct('FileVersion', '1.2.0'),
     StringStruct('ProductName', 'QASSIMZ Organizer'),
-    StringStruct('ProductVersion', '1.1.0'),
+    StringStruct('ProductVersion', '1.2.0'),
     StringStruct('LegalCopyright', '© Ahmed Qassim — QASSIMZ')])]),
   VarFileInfo([VarStruct('Translation', [1033, 1200])])])

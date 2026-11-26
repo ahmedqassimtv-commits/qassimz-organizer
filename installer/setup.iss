@@ -1,7 +1,7 @@
 ﻿; QASSIMZ Organizer — Inno Setup script
 #define AppName "QASSIMZ Organizer"
 #ifndef AppVer
-  #define AppVer "1.1.0"
+  #define AppVer "1.2.0"
 #endif
 #define AppExe "QASSIMZ Organizer.exe"
 

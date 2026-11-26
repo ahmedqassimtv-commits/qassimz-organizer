@@ -70,10 +70,15 @@ const demoApi = {
     return true;
   },
   apply: async () => { setTimeout(() => window.onBackend("applied", { moved: 11, errors: 0, folder: state.folder }), 600); return true; },
+  win_minimize: async () => true,
+  win_toggle_maximize: async () => false,
+  win_close: async () => true,
 };
 
 function localStorageSafe(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function debounce(fn, ms = 120) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
+const PAGE_TITLES = { organize: "تنظيم", auto: "تلقائي", history: "السجل والتراجع", about: "عن البرنامج", guide: "التعليمات" };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const base = (p) => p.split(/[\\/]/).pop();
 const rel = (p) => { const f = state.plan.folder; return p.startsWith(f) ? p.slice(f.length + 1) : p; };
@@ -119,7 +124,8 @@ window.onBackend = (ev, d) => {
   } else if (ev === "auto") {
     S.last_auto = d.at;
     renderAuto();
-    if (d.moved) toast(`⚡ اترتب ${d.moved} ملف تلقائياً`);
+    if (d.moved) toast(`⚡ اترتب ${d.moved} ملف${d.manual ? "" : " تلقائياً"}`);
+    else if (d.manual) toast("✓ المجلدات المراقبة مترتبة بالفعل");
   } else if (ev === "settings") {
     Object.assign(S, d);
     renderAuto();
@@ -225,14 +231,35 @@ function showPlan(plan) {
   renderRows();
 }
 
-function renderRows() {
-  if (!state.plan) return;
+function getFilteredItems() {
+  if (!state.plan) return [];
   const q = state.search.toLowerCase();
-  const items = state.plan.items.filter((it) =>
+  return state.plan.items.filter((it) =>
     it.status !== "error" &&
     (!state.filter || (state.filter === "duplicates" ? it.duplicate : it.category === state.filter && !it.duplicate)) &&
     (!q || it.src.toLowerCase().includes(q) || it.dst.toLowerCase().includes(q))
   );
+}
+
+function syncChkAll(filtered = getFilteredItems()) {
+  const chk = $("#chkAll");
+  if (!chk) return;
+  if (!filtered.length) {
+    chk.checked = false;
+    chk.indeterminate = false;
+    return;
+  }
+  let checkedCount = 0;
+  for (const it of filtered) {
+    if (!state.excluded.has(it.src)) checkedCount++;
+  }
+  chk.checked = checkedCount === filtered.length;
+  chk.indeterminate = checkedCount > 0 && checkedCount < filtered.length;
+}
+
+function renderRows() {
+  if (!state.plan) return;
+  const items = getFilteredItems();
   const max = 1500;
   $("#rows").innerHTML = items.slice(0, max).map((it) => {
     const r = rel(it.dst);
@@ -260,9 +287,11 @@ function renderRows() {
       const s = tr.dataset.s;
       e.target.checked ? state.excluded.delete(s) : state.excluded.add(s);
       tr.classList.toggle("off", !e.target.checked);
+      syncChkAll();
       count();
     };
   });
+  syncChkAll(items);
   count();
 }
 
@@ -313,6 +342,8 @@ function go(page) {
   state.page = page;
   $$(".nav").forEach((n) => n.classList.toggle("active", n.dataset.page === page));
   $$(".page").forEach((p) => p.classList.toggle("active", p.id === "page-" + page));
+  const tp = $("#topPageTitle");
+  if (tp) tp.textContent = PAGE_TITLES[page] || page;
   if (page === "history") loadHistory();
 }
 
@@ -418,6 +449,15 @@ function setupKeyboardShortcuts() {
 
 /* ---------- wiring ---------- */
 async function init() {
+  // Wire integrated frameless Liquid Glass topbar controls
+  $("#winMin")?.addEventListener("click", () => api().win_minimize?.());
+  $("#winMax")?.addEventListener("click", () => api().win_toggle_maximize?.());
+  $("#winClose")?.addEventListener("click", () => api().win_close?.());
+  $("#appTopbar")?.addEventListener("dblclick", (e) => {
+    if (e.target.closest(".no-drag, button, input")) return;
+    api().win_toggle_maximize?.();
+  });
+
   INFO = await api().info();
   $("#ver").textContent = "v" + INFO.version;
   $("#aboutVer").textContent = "الإصدار " + INFO.version;
@@ -434,8 +474,10 @@ async function init() {
   setFolder(INFO.start_folder || s.folder || INFO.downloads);
   if (!s.welcomed && !INFO.start_folder) $("#welcome").classList.remove("hidden");
 
+  const browseFolder = async () => { const p = await api().pick_folder(); if (p) setFolder(p); };
   $$(".nav").forEach((n) => (n.onclick = () => go(n.dataset.page)));
-  $("#btnPick").onclick = async () => { const p = await api().pick_folder(); if (p) setFolder(p); };
+  $("#btnPick").onclick = browseFolder;
+  $(".folder-path")?.addEventListener("click", browseFolder);
   $("#btnHistPick").onclick = async () => { const p = await api().pick_folder(); if (p) { setFolder(p); loadHistory(); } };
   $("#btnDownloads").onclick = () => setFolder(INFO.downloads);
   $("#btnDesktop").onclick = () => setFolder(INFO.desktop || INFO.downloads.replace(/Downloads$/i, "Desktop"));
@@ -452,15 +494,22 @@ async function init() {
   $("#btnApply").onclick = async () => { busy(true); await api().apply([...state.excluded]); };
   $("#btnCancel").onclick = () => { $("#resultCard").classList.add("hidden"); $("#emptyState").classList.remove("hidden"); };
   $("#chkAll").onchange = (e) => {
+    const on = e.target.checked;
+    const filtered = getFilteredItems();
+    for (const it of filtered) {
+      if (on) state.excluded.delete(it.src);
+      else state.excluded.add(it.src);
+    }
     $$("#rows tr[data-s]").forEach((tr) => {
-      const s = tr.dataset.s;
-      e.target.checked ? state.excluded.delete(s) : state.excluded.add(s);
-      tr.classList.toggle("off", !e.target.checked);
-      tr.querySelector("input").checked = e.target.checked;
+      tr.classList.toggle("off", !on);
+      const inp = tr.querySelector("input");
+      if (inp) inp.checked = on;
     });
+    e.target.indeterminate = false;
     count();
   };
-  $("#search").oninput = (e) => { state.search = e.target.value; renderRows(); };
+  const onSearchInput = debounce((val) => { state.search = val; renderRows(); }, 120);
+  $("#search").oninput = (e) => onSearchInput(e.target.value);
   $("#btnUndo").onclick = doUndo;
 
   renderAuto();
@@ -492,7 +541,10 @@ async function init() {
       renderAuto();
     }
   };
-  $("#btnNow").onclick = () => { api().organize_now(); toast("⚡ بيرتب دلوقتي…"); };
+  $("#btnNow").onclick = async () => {
+    const ok = await api().organize_now();
+    toast(ok ? "⚡ بيرتب المجلدات دلوقتي…" : "⏳ فيه عملية ترتيب شغالة حالياً…");
+  };
   $("#updPill").onclick = () => go("about");
   $("#btnUpdate").onclick = () => { $("#btnUpdate").disabled = true; api().install_update(); };
   $("#btnCheckUpd").onclick = async () => {
@@ -505,16 +557,23 @@ async function init() {
   [["#btnGithub", "github"], ["#btnGithub2", "github"], ["#btnSupport", "support"], ["#btnSupport2", "support"], ["#btnSite", "site"]]
     .forEach(([sel, k]) => ($(sel).onclick = () => api().open_url(INFO[k])));
 
-  // Folder dropzone visual support
+  // Folder dropzone with graceful WebView2 fallback (File.path is undefined in WebView2/pywebview)
   const dropCard = $("#folderDropCard");
   if (dropCard) {
     dropCard.addEventListener("dragover", (e) => { e.preventDefault(); dropCard.classList.add("dragover"); });
-    dropCard.addEventListener("dragleave", () => dropCard.classList.remove("dragover"));
-    dropCard.addEventListener("drop", (e) => {
+    dropCard.addEventListener("dragleave", (e) => {
+      if (!dropCard.contains(e.relatedTarget)) dropCard.classList.remove("dragover");
+    });
+    dropCard.addEventListener("drop", async (e) => {
       e.preventDefault();
       dropCard.classList.remove("dragover");
       const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-      if (f && f.path) setFolder(f.path);
+      if (f && f.path) {
+        setFolder(f.path);
+        return;
+      }
+      toast("📁 اختار المجلد من نافذة التصفح لتأكيد المسار الكامل");
+      await browseFolder();
     });
   }
 
