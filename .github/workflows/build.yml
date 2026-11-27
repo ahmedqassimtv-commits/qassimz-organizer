@@ -71,6 +71,16 @@ jobs:
       - name: Portable zip
         shell: pwsh
         run: Compress-Archive -Path "dist/QASSIMZ Organizer/*" -DestinationPath "dist/QASSIMZ-Organizer-Portable.zip"
+      - name: Build Delta Package (.qpkg + manifest.json)
+        shell: pwsh
+        run: |
+          $ver = ${{ needs.version.outputs.ver }}
+          $ver = ($ver -replace '^[vV]', '')
+          if (-not $ver) { $ver = '1.0.0' }
+          Invoke-WebRequest "https://raw.githubusercontent.com/ahmedqassimtv-commits/qassimz-hub/main/tools/qpkg_packager.py" -OutFile "qpkg_packager.py" -UseBasicParsing
+          python qpkg_packager.py pack --input "dist/QASSIMZ Organizer" --output-dir "dist/delta" --app-id "qassimz-organizer" --version "$ver"
+          python qpkg_packager.py verify --manifest "dist/delta/manifest.json" --qpkg "dist/delta/qassimz-organizer-v$ver.qpkg"
+
       - uses: actions/upload-artifact@v4
         with:
           name: QASSIMZ-Organizer
@@ -88,9 +98,13 @@ jobs:
             ## ⬇️ التحميل
             - **QASSIMZ-Organizer-Setup** — التسطيب العادي (موصى بيه، وبيحدّث نفسه)
             - **Portable.zip** — من غير تسطيب
+            dist/delta/manifest.json
+            dist/delta/*.qpkg
 
             لو ظهرت شاشة SmartScreen: **More info ← Run anyway**.
             اللي مسطّب نسخة قديمة هيظهرله «تحديث جديد» جوه البرنامج.
           files: |
             dist/QASSIMZ-Organizer-Setup-*.exe
             dist/QASSIMZ-Organizer-Portable.zip
+            dist/delta/manifest.json
+            dist/delta/*.qpkg
