@@ -130,9 +130,9 @@
   --surface-3: rgba(255, 255, 255, 0.15);
   --surface-hover: rgba(255, 255, 255, 0.21);
 
-  --glass-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.24);
-  --glass-shadow: 0 18px 42px -10px rgba(0, 0, 0, 0.45), inset 0 1.5px 1px rgba(255, 255, 255, 0.48), inset 0 -1px 0.5px rgba(255, 255, 255, 0.10);
+  --glass-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.20);
+  --glass-shadow: 0 20px 46px -12px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.30), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
 
   /* Typography & Hairlines */
   --txt: #F4FAF8;
@@ -141,9 +141,9 @@
   --line: rgba(255, 255, 255, 0.14);
   --line-strong: rgba(255, 255, 255, 0.24);
 
-  /* Signature Identity — Emerald Mint (#10B981) */
-  --acc: #10B981;
-  --acc-hover: #34D399;
+  /* Signature Identity — Emerald Mint (#18D67E) */
+  --acc: #18D67E;
+  --acc-hover: #4ADE9B;
   --acc-deep: #059669;
   --acc-soft: rgba(16, 185, 129, 0.2);
   --acc-border: rgba(52, 211, 153, 0.44);

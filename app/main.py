@@ -31,7 +31,7 @@ import core
 
 APP_NAME = "QASSIMZ Organizer"
 APP_ID = "qassimz-organizer"
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 REPO = "ahmedqassimtv-commits/qassimz-organizer"
 CATALOG_URL = "https://raw.githubusercontent.com/ahmedqassimtv-commits/qassimz-hub/main/catalog.json"
 GITHUB_URL = f"https://github.com/{REPO}"
