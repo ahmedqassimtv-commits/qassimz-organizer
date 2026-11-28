@@ -1,110 +1,85 @@
 <div align="center">
 
-<img src="assets/logo.png" width="140" alt="QASSIMZ Organizer">
+<img src="assets/logo.svg" alt="QASSIMZ Organizer" width="112" height="112" />
 
 # QASSIMZ Organizer
+### منظّم مجلدات المشاريع والملفات الإبداعية
 
-**رتّب ملفاتك في ثانية — صور، فيديوهات، برامج، مستندات… كل حاجة في مكانها وباسم مفهوم.**
+<!-- اللغات المدعومة أسفل اللوجو مباشرة -->
+<p>
+  <img src="https://img.shields.io/badge/Language-العربية%20(RTL)-10B981?style=for-the-badge" alt="العربية (RTL)" /> <img src="https://img.shields.io/badge/Language-English-3B82F6?style=for-the-badge" alt="English" />
+</p>
 
-من **أحمد قاسم — قَاسِمز** · مجاني ومفتوح المصدر · Windows 10/11
+<p>
+  <a href="https://github.com/ahmedqassimtv-commits/qassimz-organizer/releases/latest"><img src="https://img.shields.io/badge/Version-v1.4.0-10B981?style=flat-square" alt="Version" /></a>
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-18181B?style=flat-square" alt="Platform" />
+  <a href="https://github.com/ahmedqassimtv-commits/qassimz-hub/releases/latest"><img src="https://img.shields.io/badge/QASSIMZ-Creative%20Suite-0EA5E9?style=flat-square" alt="QASSIMZ Suite" /></a>
+</p>
 
-[⬇️ تحميل آخر إصدار](https://github.com/ahmedqassimtv-commits/qassimz-organizer/releases/latest) ·
-[🐞 الدعم والإبلاغ عن مشكلة](https://github.com/ahmedqassimtv-commits/qassimz-organizer/issues) ·
-[🌐 qassimz.com](https://qassimz.com)
+<p><em>Automated Project Folder Architect & Media Asset Organizer</em></p>
 
-<img src="docs/screenshot-organize.png" width="860" alt="screenshot">
+<br />
+
+<img src="docs/preview-4k.png" alt="QASSIMZ Organizer — 4K UHD Preview" width="100%" />
 
 </div>
 
 ---
 
-## ✨ بيعمل إيه
+## 1. نظرة عامة
 
-| | |
-|---|---|
-| ⚡ **بيشتغل لوحده** | فعّل «الترتيب التلقائي» وهو يرتب التنزيلات (أو أي مجلد) كل 5 / 10 / 30 / 60 دقيقة من جنب الساعة |
-| 🔁 **يشتغل مع الويندوز** | بيفتح في الخلفية أول ما الجهاز يشتغل |
-| ⬆️ **تحديث تلقائي** | بيشوف آخر إصدار على GitHub ويحدّث نفسه بضغطة (من غير صلاحيات أدمن) |
-| 🗂️ **ترتيب حسب النوع** | صور، فيديوهات، صوتيات، مستندات، برامج، مضغوط، أكواد، خطوط، تصميمات (PSD / AI / AEP / MOGRT)… |
-| 🧠 **بيعرف الصورة/الفيديو إيه** | كاميرا 📸 · لقطة شاشة 🖥️ · واتساب 💬 · جرافيك 🎨 · خلفيات 🌄 · شورتس وريلز 📱 · تسجيل شاشة 🎬 · رسائل صوتية 🎙️ |
-| ✍️ **تسمية ذكية** | `صورة كاميرا_2026-11-02_14-12-33_SM-S918B_طولي_أزرق.jpg` · `فيديو طولي_2026-11-19_1080p_58s.mp4` |
-| ♊ **كشف المكرر** | النسخ المتطابقة 100% تتنقل لمجلد «مكرر» — مفيش مسح |
-| 👀 **معاينة قبل التنفيذ** | تشوف كل ملف هيروح فين، وتشيل اللي مش عايزه |
-| ↺ **تراجع** | ترجّع آخر ترتيب بضغطة |
-| 🖱️ **كليك يمين** | على أي مجلد ← «رتّب بـ QASSIMZ Organizer» |
-| 🌐 **عربي أو English** | أسماء المجلدات والملفات باللغة اللي تختارها |
-| 🔒 **خصوصية** | كل الشغل على جهازك. مفيش أي ملف بيترفع |
-
-## 🚀 التسطيب
-
-1. نزّل `QASSIMZ-Organizer-Setup-x.x.x.exe` من [Releases](https://github.com/ahmedqassimtv-commits/qassimz-organizer/releases/latest).
-2. شغّله وكمّل خطوات التسطيب (فيه نسخة Portable كمان لو مش عايز تسطيب).
-3. لو ظهرت شاشة SmartScreen الزرقا: **More info ← Run anyway** (البرنامج مش موقّع بشهادة مدفوعة).
-
-## 📖 طريقة الاستخدام
-
-1. **اختار المجلد** — التنزيلات أو سطح المكتب أو أي مجلد.
-2. **ظبط الاختيارات** — تسمية ذكية، تقسيم أدق، كشف المكرر، حسب السنة والشهر، المجلدات الفرعية.
-3. **افحص** وشوف المعاينة.
-4. **نفّذ الترتيب**.
-5. مش عاجبك؟ **السجل والتراجع ← تراجع عن آخر ترتيب**.
-
-### ⚡ خليه يشتغل لوحده
-1. افتح صفحة **تلقائي** وشغّل **الترتيب التلقائي**.
-2. اختار المجلدات (التنزيلات متضافة جاهزة) وكل قد إيه يرتب.
-3. شغّل **يشتغل مع الويندوز**.
-4. اقفل النافذة — البرنامج هيفضل جنب الساعة 🕘 (كليك يمين على الأيقونة: رتّب دلوقتي / إيقاف / خروج).
-
-<img src="docs/screenshot-auto.png" width="760">
-
-> البرنامج **مش بيمسح أي ملف**. والملفات اللي لسه بتتحمّل (`.crdownload` / `.part`) أو اتعدلت من أقل من دقيقتين مش بتتلمس.
-
-### البرنامج بيعرف نوع الصورة إزاي؟
-- **كاميرا:** بيانات EXIF (اسم الموبايل/الكاميرا وتاريخ التصوير).
-- **لقطة شاشة:** الاسم، أو PNG بمقاس شاشة معروف.
-- **واتساب:** صيغة الأسماء `IMG-YYYYMMDD-WAxxxx`.
-- **جرافيك:** PNG/WebP شفاف أو صغير (لوجوهات، ملصقات).
-- **خلفيات:** مقاسات 2K / 4K / 5K / Ultrawide.
-- **فيديو طولي:** الارتفاع أكبر من العرض (بيقرا بيانات MP4/MOV من غير ffmpeg).
-- **اللون:** اللون الغالب في الصورة بيتضاف للاسم.
-
-## 🛠️ للمطورين
-
-```bash
-pip install -r requirements.txt
-python app/main.py          # تشغيل
-build.bat                   # يبني البرنامج + الـ installer (محتاج Inno Setup 6)
-```
-
-### نشر إصدار جديد (والبرنامج عند الناس يحدّث نفسه)
-1. غيّر `VERSION` في `app/main.py` (مثلاً `1.1.0`).
-2. اعمل push على `main`.
-3. GitHub Actions هيبني الـ Setup والنسخة Portable وينزّلهم في Releases، وكل اللي مسطّب البرنامج هيظهرله «تحديث جديد».
-
-```
-app/core.py          محرك التصنيف والتسمية والتراجع
-app/main.py          نافذة البرنامج (pywebview)
-app/ui/              الواجهة (Liquid Glass — HTML/CSS/JS)
-assets/              اللوجو (SVG / PNG / ICO)
-installer/setup.iss  سكريبت الـ installer
-```
-
-## ❤️ الدعم
-
-- مشكلة أو اقتراح؟ [افتح Issue](https://github.com/ahmedqassimtv-commits/qassimz-organizer/issues).
-- عجبك البرنامج؟ اديله ⭐ على GitHub وشاركه.
+أداة ذكية لإنشاء هياكل مجلدات المشاريع القياسية وترتيب ملفات التصوير والصوت والتصميم تلقائياً حسب الامتداد والنوع في ثوانٍ.
 
 ---
-<div align="center">© 2026 أحمد قاسم — قَاسِمز · MIT License</div>
 
-<!-- QASSIMZ-LIQUID-GLASS-RELEASE -->
+## 2. المميزات الرئيسية
+
+1. **قوالب مشاريع جاهزة ومخصصة:** إنشاء شجرة مجلدات كاملة لمشاريع المونتاج والتصميم بضغطة زر.
+2. **فرز تلقائي ذكي للملفات:** توزيع الفيديو والصوت والصور والمشاريع داخل مجلداتها الصحيحة تلقائياً.
+3. **معاينة قبل التنفيذ (Dry Run):** التأكد من خطة الترتيب قبل نقل أي ملف مع إمكانية التراجع.
+4. **حماية من التكرار والكتابة فوق الملفات:** تسمية آمنة تحافظ على جميع ملفاتك الأصلية.
+5. **توفير ساعات من التنظيم اليدوي:** مثالي للاستوديوهات والمونتيرين ذوي المشاريع المتعددة.
+
 ---
 
-## ✨ الجديد في الإصدار `v1.4.0` — تصميم Apple Liquid Glass & أيقونات v2
+## 3. التحميل والتثبيت
 
-<img src="assets/logo.svg" width="72" height="72" align="right" alt="qassimz-organizer (Or)" />
+1. **الطريقة الموصى بها (عبر QASSIMZ Hub):**
+   - حمّل وافتح [**QASSIMZ Hub**](https://github.com/ahmedqassimtv-commits/qassimz-hub/releases/latest) لتثبيت **QASSIMZ Organizer** وتلقي جميع التحديثات التفاضلية (`.qpkg`) تلقائياً بضغطة زر.
+2. **التحميل المباشر من GitHub Releases:**
+   - افتح صفحة [**أحدث إصدار (v1.4.0)**](https://github.com/ahmedqassimtv-commits/qassimz-organizer/releases/latest).
+   - حمّل ملف المثبّت (`Setup.exe`) للتثبيت العادي بدون صلاحيات مسؤول، أو النسخة المحمولة (`Portable.zip`) إن وجدت.
 
-- أيقونة جديدة `Or` (**v2 · Adobe 2022 Style**) بلون زمردي مشرق (`#18D67E`).
-- تحسين طبقات **Apple Liquid Glass** وتوحيد الألوان الزمردية وشاشات المثبّت المتحركة.
+---
 
-<!-- /QASSIMZ-LIQUID-GLASS-RELEASE -->
+## 4. متطلبات التشغيل
+
+1. نظام التشغيل: Windows 10 / 11 (64-bit).
+
+---
+
+## 5. منظومة قَاسِمز الإبداعية (QASSIMZ Creative Suite)
+
+| # | التطبيق | الوصف | المستودع |
+|---:|---|---|---|
+| 1 | **QASSIMZ Hub** | مركز ومنظومة قَاسِمز الإبداعية | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-hub) |
+| 2 | **QASSIMZ Thumbs** | محرك مصغّرات ويندوز والعارض الفوري | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-thumbs) |
+| 3 | **QASSIMZ FONTs** | مدير الخطوط الاحترافي والمزامنة السحابية | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-fonts) |
+| 4 | **QASSIMZ Studio** | استوديو المونتاج والتحرير الاحترافي | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-studio) |
+| 5 | **QASSIMZ Producer** | مساحة إدارة الإنتاج وصناعة المحتوى | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-producer) |
+| 6 | **QASSIMZ Music** | مشغّل الموسيقى ومكتبة الصوتيات للمونتاج | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-music) |
+| 7 | **QDM — QASSIMZ Download Manager** | مدير التحميل السريع متعدد المسارات | [GitHub](https://github.com/ahmedqassimtv-commits/qdm) |
+| 8 | **QASSIMZ Organizer** **(الحالي)** | منظّم مجلدات المشاريع والملفات الإبداعية | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-organizer) |
+| 9 | **QASSIMZ Study** | منصة المذاكرة والتركيز وإدارة الدروس | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-study) |
+| 10 | **QASSIMZ VOX FX** | إضافة المؤثرات البصرية والصوتية لـ Premiere Pro | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-vox-fx) |
+| 11 | **QASSIMZ Captions** | إضافة الترجمة والكتابة التلقائية لـ Premiere Pro | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-captions) |
+| 12 | **QASSIMZ Footage** | إضافة البحث واستيراد اللقطات لـ Premiere Pro | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-footage) |
+| 13 | **QASSIMZ MOGRT Hub** | مكتبة ومدير قوالب MOGRT لـ Premiere Pro | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-mogrt-hub) |
+| 14 | **QASSIMZ MOGRT Maker** | صانع قوالب MOGRT الاحترافي لـ Premiere Pro | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-mogrt-maker) |
+| 15 | **QASSIMZ Export** | إضافة التصدير الذكي السريع لـ Premiere Pro | [GitHub](https://github.com/ahmedqassimtv-commits/qassimz-export) |
+
+---
+
+<div align="center">
+  <sub>© 2026 <strong>QASSIMZ Creative Suite</strong> — Ahmed Qassim. جميع الحقوق محفوظة.</sub>
+</div>
